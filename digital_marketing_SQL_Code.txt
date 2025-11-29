@@ -1,0 +1,178 @@
+SELECT * from digital_marketing;
+
+-- Fixing data in company_size column
+-- changing values "Nov-50" to "11-50" and "10-Jan" to "1-10".
+UPDATE digital_marketing
+SET company_size = 
+	CASE
+		WHEN company_size = "Nov-50" THEN "11-50"
+        WHEN company_size = "10-Jan" THEN "1-10"
+        ELSE company_size
+	END;
+
+-- Calculating Total Conversions = Engagement Metrics * Conversion Rate
+-- Which is required to calculate CPA and Revenue
+
+SELECT engagement_metric,
+	conversion_rate, 
+	ROUND(engagement_metric * conversion_rate, 2) AS total_conversions
+FROM digital_marketing
+;
+
+ALTER TABLE digital_marketing
+ADD total_conversions decimal;
+
+UPDATE digital_marketing
+SET total_conversions = ROUND(engagement_metric * conversion_rate, 2);
+
+-- Calculating Revenue
+-- Revenue is the absolute financial outcome, required for ROAS calculation.
+-- Populating Revenue using ACV assumption
+-- I applied a strategic Average Conversion Value (ACV) based on the
+-- industry to generate a realistic revenue proxy, which is essential as raw revenue is missing.
+WITH acv_cte AS
+(
+SELECT campaign_id, industry, 
+CASE industry
+	WHEN 'finance' THEN 150.0
+            WHEN 'healthcare' THEN 150.0
+            WHEN 'technology' THEN 80.0
+            WHEN 'services' THEN 80.0
+            WHEN 'e-commerce' THEN 30.0
+            WHEN 'retail' THEN 30.0
+            ELSE 50.0 -- Manufacturing or default
+END AS ACV,
+
+((engagement_metric * conversion_rate) *
+CASE industry
+	WHEN 'finance' THEN 150.0
+            WHEN 'healthcare' THEN 150.0
+            WHEN 'technology' THEN 80.0
+            WHEN 'services' THEN 80.0
+            WHEN 'e-commerce' THEN 30.0
+            WHEN 'retail' THEN 30.0
+            ELSE 50.0 
+END
+)
+AS revenue
+FROM digital_marketing
+)
+select digital_marketing.engagement_metric,
+	digital_marketing.conversion_rate,
+    ACV, 
+    acv_cte.revenue from acv_cte 
+join digital_marketing
+on
+digital_marketing.campaign_id = acv_cte.campaign_id;
+;
+
+alter table digital_marketing
+add column revenue float;
+
+update digital_marketing
+set revenue = ((engagement_metric * conversion_rate) *
+CASE industry
+	WHEN 'finance' THEN 150.0
+            WHEN 'healthcare' THEN 150.0
+            WHEN 'technology' THEN 80.0
+            WHEN 'services' THEN 80.0
+            WHEN 'e-commerce' THEN 30.0
+            WHEN 'retail' THEN 30.0
+            ELSE 50.0 
+END
+);
+
+-- Created & Populated ROAS with Division-by-Zero Handling
+-- The CASE statement prevents errors if ad_spend is zero. If no money was
+-- spent, the ROAS is logically zero.
+alter table digital_marketing
+add column ROAS float;
+
+select ad_spend, revenue, ROAS,
+case
+	when ad_spend = 0 then 0
+    else revenue/ad_spend
+end as roas from digital_marketing;
+
+
+update digital_marketing
+set ROAS = 
+case
+	when ad_spend = 0 then 0
+    else revenue/ad_spend
+end
+;
+
+-- Created & Populated CPA with Error and Penalty Handling
+-- Rationale: Assigning a high penalty value (99999) when total_conversions is zero
+-- isolates non-performing campaigns and marks them for immediate budget cuts.
+alter table digital_marketing
+add column CPA float;
+
+update digital_marketing
+set CPA = 
+case
+	when total_conversions = 0 then 99999
+    else ad_spend / total_conversions
+end
+;
+
+select * from digital_marketing;
+-- Strategic Analysis Queries
+-- 1. Which audience segments deliver the highest return on investment
+-- 2. Which marketing channels are the most profitable overall? (The primary budget allocation metric).
+-- 3. Which specific campaigns should be replicated (Top) and which should be killed (Bottom)?
+
+-- 1.
+select 
+target_audience,
+sum(ad_spend) as Total_Spend,
+sum(revenue) as Total_Revenue,
+case
+	when sum(ad_spend) = 0 then 0
+    else round(sum(revenue) / sum(ad_spend),2)
+end
+as weighted_ROAS
+from digital_marketing
+group by target_audience
+order by weighted_ROAS desc;
+
+-- 2.
+select 
+marketing_channel,
+sum(ad_spend) as Total_Spend,
+round(sum(revenue),2) as Total_Revenue,
+case
+	when sum(ad_spend) = 0 then 0
+    else round(sum(revenue) / sum(ad_spend),2)
+end
+as weighted_ROAS,
+round(avg(CPA),2) as Average_CPA
+from digital_marketing
+group by marketing_channel
+order by weighted_ROAS desc;
+
+-- 3.
+
+(select 'Top' as perfomance_group,
+	campaign_id, 
+    marketing_channel, 
+    industry, 
+    ad_spend, 
+    revenue, 
+    ROAS 
+from digital_marketing
+order by ROAS desc
+limit 5)
+union all
+(select 'Bottom' as perfomance_group, 
+	campaign_id, 
+	marketing_channel, 
+    industry, 
+    ad_spend, 
+    revenue, 
+    ROAS 
+from digital_marketing
+where ad_spend > 0
+order by ROAS asc
+limit 5);
