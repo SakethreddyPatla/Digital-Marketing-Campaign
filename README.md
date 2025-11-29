@@ -22,16 +22,16 @@ Since raw revenue was missing, applied **Average Conversion Value (ACV)** assump
 - Technology / Services → 80  
 - E-commerce / Retail → 30  
 - Default (Manufacturing, etc.) → 50  
-- Formula:  Revenue = Total Conversions × ACV
+  Formula:  Revenue = Total Conversions × ACV
 - Added as a new column (`revenue`).
 
 - **ROAS (Return on Ad Spend)**  
-- Formula:  ROAS = Revenue ÷ Ad Spend
+  Formula:  ROAS = Revenue ÷ Ad Spend
 - Division-by-zero handled: if `ad_spend = 0`, ROAS = 0.  
 - Added as a new column (`ROAS`).
 
 - **CPA (Cost per Acquisition)**  
-- Formula:  CPA = Ad Spend ÷ Total Conversions
+  Formula:  CPA = Ad Spend ÷ Total Conversions
 - Division-by-zero handled: if `total_conversions = 0`, CPA = 99999 (penalty marker).  
 - Added as a new column (`CPA`).
 
