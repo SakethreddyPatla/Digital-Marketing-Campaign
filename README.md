@@ -2,7 +2,7 @@
 This project demonstrates a comprehensive SQL workflow to clean, enrich, and analyze a raw digital marketing dataset. The goal is to transform messy, incomplete data into clear, actionable Key Performance Indicators (KPIs) like Revenue, ROAS (Return on Ad Spend), and CPA (Cost per Acquisition) to support strategic decision-making.
 
 
-## 🔹 Steps Implemented
+## Steps Implemented
 
 ### 1. **Data Cleaning**
 - Fixed inconsistent values in `company_size`:
@@ -37,7 +37,7 @@ Since raw revenue was missing, applied **Average Conversion Value (ACV)** assump
 
 ---
 
-## 🔹 Strategic Analysis Queries
+## Strategic Analysis Queries
 
 1. **Audience ROI**  
  - Grouped by `target_audience`.  
@@ -63,7 +63,7 @@ Since raw revenue was missing, applied **Average Conversion Value (ACV)** assump
 
 ---
 
-## 🔹 Key Learnings
+## Key Learnings
 - **Weighted ROAS** is more accurate than simple averages because it accounts for spend size.  
 - **Penalty CPA values** isolate non-performing campaigns for immediate budget cuts.  
 - Using **ACV assumptions** allows realistic revenue modeling when raw data is incomplete.  
@@ -71,7 +71,7 @@ Since raw revenue was missing, applied **Average Conversion Value (ACV)** assump
 
 ---
 
-## 🔹 Business Impact
+## Business Impact
 
 This SQL workflow is designed to bridge the gap between **raw marketing data** and **strategic decision-making**. By cleaning, enriching, and analyzing the dataset, the project enables marketing teams to:
 
@@ -95,10 +95,4 @@ This SQL workflow is designed to bridge the gap between **raw marketing data** a
 - Clean, structured metrics (Conversions, Revenue, ROAS, CPA) can be directly fed into BI tools like Power BI or Looker.  
 - Stakeholders get clear dashboards that support evidence-based decisions.
 
----
 
-## 🔹 Why This Matters
-Marketing leaders often struggle with incomplete or inconsistent data. This project demonstrates how **SQL transformations** can:
-- Turn messy inputs into actionable KPIs.  
-- Provide a framework for **scalable campaign analysis**.  
-- Support **business analyst and data analyst roles** by showcasing both technical skill and strategic thinking.
